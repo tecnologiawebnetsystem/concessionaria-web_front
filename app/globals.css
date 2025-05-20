@@ -1,0 +1,190 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Nova paleta de cores sofisticada para concessionária */
+    --background: 0 0% 100%;
+    --foreground: 224 71.4% 4.1%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 224 71.4% 4.1%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 224 71.4% 4.1%;
+
+    /* Azul escuro elegante como cor primária */
+    --primary: 220 54% 20%;
+    --primary-foreground: 210 40% 98%;
+
+    /* Substituindo o vermelho por um azul-turquesa mais sofisticado */
+    --secondary: 196 85% 38%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 220 14.3% 95.9%;
+    --muted-foreground: 220 8.9% 46.1%;
+
+    --accent: 220 14.3% 95.9%;
+    --accent-foreground: 220 54% 20%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 224 71.4% 4.1%;
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 224 71.4% 4.1%;
+    --foreground: 210 20% 98%;
+
+    --card: 224 71.4% 4.1%;
+    --card-foreground: 210 20% 98%;
+
+    --popover: 224 71.4% 4.1%;
+    --popover-foreground: 210 20% 98%;
+
+    /* Azul mais claro no modo escuro */
+    --primary: 217 91.2% 59.8%;
+    --primary-foreground: 210 20% 98%;
+
+    /* Azul-turquesa mais vibrante no modo escuro */
+    --secondary: 196 85% 48%;
+    --secondary-foreground: 210 20% 98%;
+
+    --muted: 215 27.9% 16.9%;
+    --muted-foreground: 217.9 10.6% 64.9%;
+
+    --accent: 215 27.9% 16.9%;
+    --accent-foreground: 210 20% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 20% 98%;
+
+    --border: 215 27.9% 16.9%;
+    --input: 215 27.9% 16.9%;
+    --ring: 216 12.2% 83.9%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Estilos personalizados para melhorar a aparência */
+.hero-gradient {
+  background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(220, 60%, 30%) 100%);
+}
+
+.dark .hero-gradient {
+  background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(220, 60%, 40%) 100%);
+}
+
+.card-hover-effect {
+  transition: all 0.3s ease;
+}
+
+.card-hover-effect:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.dark .card-hover-effect:hover {
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+}
+
+.vehicle-card {
+  overflow: hidden;
+  border-radius: var(--radius);
+  border: 1px solid hsl(var(--border));
+  transition: all 0.3s ease;
+}
+
+.vehicle-card:hover {
+  border-color: hsl(var(--primary) / 0.5);
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.dark .vehicle-card:hover {
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+}
+
+.vehicle-image-container {
+  position: relative;
+  height: 200px;
+  overflow: hidden;
+}
+
+.vehicle-image {
+  transition: transform 0.5s ease;
+}
+
+.vehicle-card:hover .vehicle-image {
+  transform: scale(1.05);
+}
+
+.price-tag {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: hsl(var(--secondary));
+  color: hsl(var(--secondary-foreground));
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius);
+  font-weight: bold;
+  z-index: 10;
+}
+
+.feature-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 9999px;
+  background-color: hsl(var(--primary) / 0.1);
+  color: hsl(var(--primary));
+}
+
+/* Melhorias de contraste para botões */
+.btn-secondary {
+  color: hsl(var(--secondary-foreground));
+  font-weight: 500;
+}
+
+/* Garantir que os textos nos botões sejam sempre legíveis */
+button,
+.button,
+[role="button"] {
+  font-weight: 500;
+}
+
+/* Melhorar contraste em botões outline no modo escuro */
+.dark [variant="outline"] {
+  border-color: hsl(var(--border));
+}
+
+/* Ajustes para o rodapé */
+footer.bg-secondary a {
+  transition: color 0.2s ease;
+}
+
+footer.bg-secondary a:hover {
+  color: white;
+}
+
+footer.bg-secondary h3 {
+  color: white;
+  font-weight: 600;
+}
+
