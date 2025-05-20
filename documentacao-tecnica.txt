@@ -1,0 +1,492 @@
+# DOCUMENTAÇÃO TÉCNICA - AUTOELITE
+
+## 1. VISÃO GERAL DO PROJETO
+
+### Descrição
+AutoElite é uma plataforma completa para gestão de concessionárias de veículos, oferecendo tanto um website público para clientes quanto um sistema ERP interno para gerenciamento de concessionárias.
+
+### Tecnologias
+
+#### Frontend
+- **Framework**: React.js 18 com Next.js 14 (App Router)
+- **Estilização**: Tailwind CSS 3 com componentes shadcn/ui
+- **Gerenciamento de Estado**: React Context API, SWR para cache e fetching
+- **Formulários**: React Hook Form com validação Zod
+- **Visualização de Dados**: Recharts para gráficos e dashboards
+
+#### Backend
+- **Servidor**: Node.js com Next.js API Routes (serverless)
+- **ORM**: Prisma para interação com banco de dados
+- **Autenticação**: NextAuth.js / Auth.js
+- **Validação**: Zod para validação de dados
+- **Segurança**: CSRF protection, rate limiting, sanitização de inputs
+
+### Infraestrutura
+- **Hospedagem Frontend/Backend**: Vercel (recomendado)
+- **Banco de Dados**: MySQL 8+ (PlanetScale ou AWS RDS recomendados)
+- **Armazenamento de Imagens**: Cloudinary ou Vercel Blob Storage
+- **CDN**: Vercel Edge Network
+- **CI/CD**: GitHub Actions ou Vercel CI/CD
+
+## 2. ARQUITETURA DO SISTEMA
+
+O sistema segue uma arquitetura de aplicação web moderna baseada em componentes:
+
+1. **Camada de Apresentação**: Interfaces React com componentes reutilizáveis
+2. **Camada de Lógica de Negócios**: Hooks React e Server Actions do Next.js
+3. **Camada de Acesso a Dados**: Prisma ORM para interação com banco de dados
+4. **Camada de API**: Next.js API Routes para endpoints RESTful
+5. **Camada de Autenticação**: NextAuth.js para gerenciamento de sessões e autenticação
+
+O sistema utiliza o padrão de renderização híbrida do Next.js:
+- **SSR (Server-Side Rendering)**: Para páginas que necessitam de dados dinâmicos
+- **SSG (Static Site Generation)**: Para páginas estáticas como landing pages
+- **ISR (Incremental Static Regeneration)**: Para páginas que mudam com pouca frequência
+- **CSR (Client-Side Rendering)**: Para componentes interativos e dinâmicos
+
+## 3. REQUISITOS
+
+### Requisitos de Sistema
+- Node.js 18.x ou superior
+- npm 8.x ou superior (ou yarn/pnpm)
+- MySQL 8.0 ou superior (ou PostgreSQL 14+)
+- Git
+
+### Variáveis de Ambiente
+O sistema requer as seguintes variáveis de ambiente:
+
+# Banco de Dados
+DATABASE_URL="mysql://usuario:senha@localhost:3306/autoelite"
+
+# NextAuth
+NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_SECRET="sua-chave-secreta-muito-segura"
+
+# Email (opcional para recuperação de senha)
+EMAIL_SERVER_HOST=smtp.example.com
+EMAIL_SERVER_PORT=587
+EMAIL_SERVER_USER=seu-usuario
+EMAIL_SERVER_PASSWORD=sua-senha
+EMAIL_FROM=noreply@autoelite.com
+
+# Upload de Imagens (opcional)
+NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=seu-cloud-name
+CLOUDINARY_API_KEY=sua-api-key
+CLOUDINARY_API_SECRET=seu-api-secret
+
+## 4. AUTENTICAÇÃO
+
+O sistema utiliza NextAuth.js para autenticação, oferecendo:
+
+- **Autenticação por Credenciais**: Email/senha com hash bcrypt
+- **Provedores OAuth**: Suporte opcional para Google, Facebook, etc.
+- **Sessões JWT**: Armazenamento de sessões via JWT
+- **Recuperação de Senha**: Via email (opcional)
+- **Controle de Acesso**: Baseado em roles (ADMIN, MANAGER, SALESPERSON, CUSTOMER)
+
+A autenticação é implementada via middleware do Next.js, protegendo rotas específicas baseadas no status de autenticação e role do usuário.
+
+## 5. BANCO DE DADOS
+
+### Modelo de Dados
+
+O sistema utiliza um banco de dados relacional MySQL com as seguintes tabelas principais:
+
+#### Tabelas Principais
+
+1. **users**: Armazena informações de todos os usuários
+   - Campos: id, name, email, password, role, emailVerified, image, createdAt, updatedAt
+
+2. **dealerships**: Concessionárias cadastradas
+   - Campos: id, name, address, city, state, zipCode, phone, email, website, logo, description, createdAt, updatedAt
+
+3. **vehicles**: Veículos disponíveis para venda
+   - Campos: id, brand, model, year, color, price, mileage, fuel, transmission, features, status, dealershipId, createdAt, updatedAt
+
+4. **vehicle_images**: Imagens dos veículos
+   - Campos: id, url, vehicleId
+
+5. **employees**: Funcionários das concessionárias
+   - Campos: id, userId, dealershipId, role, department, hireDate, salary, status, createdAt, updatedAt
+
+6. **customers**: Clientes registrados
+   - Campos: id, userId, phone, address, city, state, zipCode, document, birthDate, lastPurchase, status, createdAt, updatedAt
+
+7. **sales**: Registro de vendas
+   - Campos: id, vehicleId, customerId, sellerId, dealershipId, price, date, paymentMethod, status, createdAt, updatedAt
+
+### Conexão com o Banco de Dados
+
+O sistema utiliza Prisma ORM para interação com o banco de dados, oferecendo:
+
+- **Type Safety**: Tipos gerados automaticamente pelo Prisma
+- **Migrations**: Controle de versão do schema do banco de dados
+- **Query Builder**: API intuitiva para consultas complexas
+- **Relações**: Gerenciamento automático de relações entre tabelas
+
+## 6. INSTALAÇÃO E EXECUÇÃO
+
+### Instalar Dependências
+
+# Clonar o repositório
+git clone https://github.com/seu-usuario/autoelite.git
+cd autoelite
+
+# Instalar dependências
+npm install
+
+# Configurar variáveis de ambiente
+cp .env.example .env
+# Editar .env com suas configurações
+
+# Inicializar o banco de dados
+npx prisma migrate dev --name init
+
+# Iniciar o servidor de desenvolvimento
+npm run dev
+
+O servidor estará disponível em `http://localhost:3000`.
+
+## 7. API
+
+### Estrutura da API
+
+A API segue uma estrutura RESTful implementada via Next.js API Routes:
+
+/api
+├── auth/                 # Rotas de autenticação (NextAuth)
+├── vehicles/             # CRUD de veículos
+│   ├── index.ts          # GET (listar), POST (criar)
+│   └── [id].ts           # GET, PUT, DELETE para veículo específico
+├── dealerships/          # CRUD de concessionárias
+├── users/                # Gerenciamento de usuários
+├── customers/            # Gerenciamento de clientes
+├── employees/            # Gerenciamento de funcionários
+└── sales/                # Gerenciamento de vendas
+
+### Documentação da API
+
+#### Veículos
+
+- **GET /api/vehicles**
+  - Descrição: Lista todos os veículos
+  - Parâmetros de query: brand, model, year, minPrice, maxPrice, status
+  - Resposta: Array de veículos
+
+- **POST /api/vehicles**
+  - Descrição: Cria um novo veículo
+  - Body: Dados do veículo
+  - Resposta: Veículo criado
+
+- **GET /api/vehicles/:id**
+  - Descrição: Obtém detalhes de um veículo específico
+  - Resposta: Dados do veículo
+
+- **PUT /api/vehicles/:id**
+  - Descrição: Atualiza um veículo
+  - Body: Dados atualizados
+  - Resposta: Veículo atualizado
+
+- **DELETE /api/vehicles/:id**
+  - Descrição: Remove um veículo
+  - Resposta: Status de sucesso
+
+#### Concessionárias
+
+- **GET /api/dealerships**
+  - Descrição: Lista todas as concessionárias
+  - Parâmetros de query: city, state
+  - Resposta: Array de concessionárias
+
+- **POST /api/dealerships**
+  - Descrição: Cria uma nova concessionária
+  - Body: Dados da concessionária
+  - Resposta: Concessionária criada
+
+- **GET /api/dealerships/:id**
+  - Descrição: Obtém detalhes de uma concessionária específica
+  - Resposta: Dados da concessionária
+
+- **PUT /api/dealerships/:id**
+  - Descrição: Atualiza uma concessionária
+  - Body: Dados atualizados
+  - Resposta: Concessionária atualizada
+
+- **DELETE /api/dealerships/:id**
+  - Descrição: Remove uma concessionária
+  - Resposta: Status de sucesso
+
+#### Vendas
+
+- **GET /api/sales**
+  - Descrição: Lista todas as vendas
+  - Parâmetros de query: dealershipId, sellerId, customerId, status, startDate, endDate
+  - Resposta: Array de vendas
+
+- **POST /api/sales**
+  - Descrição: Registra uma nova venda
+  - Body: Dados da venda
+  - Resposta: Venda criada
+
+- **GET /api/sales/:id**
+  - Descrição: Obtém detalhes de uma venda específica
+  - Resposta: Dados da venda
+
+- **PUT /api/sales/:id**
+  - Descrição: Atualiza uma venda
+  - Body: Dados atualizados
+  - Resposta: Venda atualizada
+
+### Autenticação da API
+
+Todas as rotas da API, exceto as públicas, requerem autenticação via token JWT. O token é obtido através do endpoint de login e deve ser incluído no header de autorização:
+
+Authorization: Bearer {token}
+
+O acesso às rotas é controlado por middleware que verifica:
+1. Se o usuário está autenticado
+2. Se o usuário tem a role necessária para acessar o recurso
+3. Se o usuário tem permissão para a operação específica
+
+Rotas administrativas (ex: criação de concessionárias) são restritas a usuários com role ADMIN ou MANAGER.
+
+## 8. ESTRUTURA DE PASTAS
+
+autoelite/
+├── app/                      # Diretório principal do Next.js App Router
+│   ├── api/                  # API Routes (backend serverless)
+│   ├── auth/                 # Páginas de autenticação (login, registro)
+│   ├── dashboard/            # Área administrativa/ERP
+│   ├── veiculos/             # Páginas públicas de veículos
+│   ├── concessionarias/      # Páginas públicas de concessionárias
+│   ├── sobre/                # Página sobre
+│   ├── contato/              # Página de contato
+│   ├── globals.css           # Estilos globais
+│   ├── layout.tsx            # Layout principal da aplicação
+│   └── page.tsx              # Página inicial
+├── components/               # Componentes React reutilizáveis
+│   ├── ui/                   # Componentes de UI básicos (shadcn)
+│   ├── dashboard/            # Componentes específicos do dashboard
+│   ├── vehicles/             # Componentes relacionados a veículos
+│   ├── chatbot/              # Componentes do chatbot
+│   └── ...                   # Outros componentes
+├── hooks/                    # React Hooks personalizados
+├── lib/                      # Funções utilitárias e configurações
+├── public/                   # Arquivos estáticos (imagens, fontes, etc.)
+├── types/                    # Definições de tipos TypeScript
+├── prisma/                   # Configuração e schemas do Prisma ORM
+│   └── schema.prisma         # Definição do schema do banco de dados
+├── .env                      # Variáveis de ambiente (não versionado)
+├── .env.example              # Exemplo de variáveis de ambiente
+├── next.config.js            # Configuração do Next.js
+├── tailwind.config.js        # Configuração do Tailwind CSS
+├── tsconfig.json             # Configuração do TypeScript
+└── package.json              # Dependências e scripts
+
+## 9. SCHEMA DO BANCO DE DADOS (PRISMA)
+
+// Usuários
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  password      String?
+  role          Role      @default(CUSTOMER)
+  emailVerified DateTime?
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  employee      Employee?
+  customer      Customer?
+  sales         Sale[]    @relation("SalesSeller")
+  purchases     Sale[]    @relation("SalesCustomer")
+  
+  @@map("users")
+}
+
+enum Role {
+  ADMIN
+  MANAGER
+  SALESPERSON
+  CUSTOMER
+}
+
+// Concessionárias
+model Dealership {
+  id          String    @id @default(cuid())
+  name        String
+  address     String
+  city        String
+  state       String
+  zipCode     String
+  phone       String
+  email       String
+  website     String?
+  logo        String?
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  vehicles    Vehicle[]
+  employees   Employee[]
+  sales       Sale[]
+  
+  @@map("dealerships")
+}
+
+// Veículos
+model Vehicle {
+  id            String    @id @default(cuid())
+  brand         String
+  model         String
+  year          String
+  color         String
+  price         Decimal   @db.Decimal(10, 2)
+  mileage       Int
+  fuel          String
+  transmission  String
+  features      String    @db.Text
+  images        VehicleImage[]
+  status        VehicleStatus @default(AVAILABLE)
+  dealershipId  String
+  dealership    Dealership @relation(fields: [dealershipId], references: [id])
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  sale          Sale?
+  
+  @@map("vehicles")
+}
+
+model VehicleImage {
+  id        String   @id @default(cuid())
+  url       String
+  vehicleId String
+  vehicle   Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  
+  @@map("vehicle_images")
+}
+
+enum VehicleStatus {
+  AVAILABLE
+  RESERVED
+  SOLD
+}
+
+// Funcionários
+model Employee {
+  id            String    @id @default(cuid())
+  userId        String    @unique
+  user          User      @relation(fields: [userId], references: [id])
+  dealershipId  String
+  dealership    Dealership @relation(fields: [dealershipId], references: [id])
+  role          EmployeeRole
+  department    String
+  hireDate      DateTime
+  salary        Decimal   @db.Decimal(10, 2)
+  status        EmployeeStatus @default(ACTIVE)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  @@map("employees")
+}
+
+enum EmployeeRole {
+  MANAGER
+  SALESPERSON
+  MECHANIC
+  RECEPTIONIST
+}
+
+enum EmployeeStatus {
+  ACTIVE
+  INACTIVE
+}
+
+// Clientes
+model Customer {
+  id            String    @id @default(cuid())
+  userId        String    @unique
+  user          User      @relation(fields: [userId], references: [id])
+  phone         String
+  address       String?
+  city          String?
+  state         String?
+  zipCode       String?
+  document      String?
+  birthDate     DateTime?
+  lastPurchase  DateTime?
+  status        CustomerStatus @default(ACTIVE)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  @@map("customers")
+}
+
+enum CustomerStatus {
+  ACTIVE
+  INACTIVE
+}
+
+// Vendas
+model Sale {
+  id            String    @id @default(cuid())
+  vehicleId     String    @unique
+  vehicle       Vehicle   @relation(fields: [vehicleId], references: [id])
+  customerId    String
+  customer      User      @relation("SalesCustomer", fields: [customerId], references: [id])
+  sellerId      String
+  seller        User      @relation("SalesSeller", fields: [sellerId], references: [id])
+  dealershipId  String
+  dealership    Dealership @relation(fields: [dealershipId], references: [id])
+  price         Decimal   @db.Decimal(10, 2)
+  date          DateTime
+  paymentMethod String
+  status        SaleStatus @default(PENDING)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  @@map("sales")
+}
+
+enum SaleStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  CANCELLED
+}
+
+## 10. CONSIDERAÇÕES DE SEGURANÇA
+
+- Todas as senhas são armazenadas com hash bcrypt
+- Implementação de CSRF tokens para proteção contra ataques CSRF
+- Validação de entrada em todos os formulários
+- Sanitização de dados para prevenir ataques de injeção SQL
+- Implementação de rate limiting para prevenir ataques de força bruta
+- Uso de HTTPS em produção
+- Proteção de rotas sensíveis via middleware de autenticação
+- Validação de permissões baseada em roles de usuário
+- Headers de segurança configurados (Content-Security-Policy, X-XSS-Protection, etc.)
+- Auditoria de ações sensíveis no sistema
+
+## 11. MANUTENÇÃO E SUPORTE
+
+### Atualizações
+Recomenda-se manter as dependências atualizadas regularmente:
+npm outdated
+npm update
+
+### Backup do Banco de Dados
+Configure backups regulares do banco de dados:
+# Exemplo de backup MySQL
+mysqldump -u usuario -p autoelite > backup_$(date +%Y%m%d).sql
+
+### Monitoramento
+Recomenda-se implementar ferramentas de monitoramento como Sentry para rastreamento de erros e New Relic ou Datadog para monitoramento de desempenho.
+
+## 12. CONTATO E SUPORTE
+
+Para suporte técnico ou dúvidas sobre a implementação, entre em contato:
+- Email: suporte@autoelite.com
+- Website: https://www.autoelite.com/suporte
